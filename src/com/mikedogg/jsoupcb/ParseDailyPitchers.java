@@ -22,65 +22,33 @@ public class ParseDailyPitchers {
 			// get stats for players in each data row <tr>
 			
 			Pitcher pitcher = new Pitcher();
-			for (int idx=0; idx<e.childrenSize(); idx++) {
-				switch (idx) {
-
-				case 1:  //playerId and player (name)
-					pitcher.setPlayerId(e.child(idx).child(0).attr("href"));
-					if (ownedPlayers.get(pitcher.getPlayerId()) == null) continue;
-					pitcher.setPlayer(e.child(idx).child(0).text());
-					break;
-					
-				case 2: // playerTeam
-					pitcher.setTeam(e.child(idx).child(0).text());
-					break;
-				case 5: // playerWins
-					pitcher.setWin(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 15: // playerSaves
-					pitcher.setSave(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 16: // playerHolds
-					pitcher.setHold(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 17: // playerIP
-					String newIpVal;
-	        		if (! e.child(idx).text().endsWith("0")) {
-	        			char[] charArray = e.child(idx).text().toCharArray();
-	        			if (e.child(idx).text().endsWith("1"))
-	        				charArray[charArray.length-1] = '3';
-	        			else
-	        				charArray[charArray.length-1] = '7';
-	        			newIpVal = String.valueOf(charArray);
-	         		}
-	        		else
-	        			newIpVal=e.child(idx).text();
-					pitcher.setIp(Float.parseFloat(newIpVal));
-					break;
-				case 18: // playeHits
-					pitcher.setHits(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 20: // playerER
-					pitcher.setEr(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 22: // playerBB
-					pitcher.setBb(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 24: // playerSO
-					pitcher.setK(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 25: // playerHBP
-					pitcher.setHbp(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 26: // playerBk
-					pitcher.setBk(Integer.parseInt(e.child(idx).text()));
-					break;
-				case 27: // playerWP
-					pitcher.setWp(Integer.parseInt(e.child(idx).text()));
-					break;
-				}
-			}
-			
+			pitcher.setPlayerId(e.getElementsByAttributeValue("data-stat", "player").select("a").first().attr("href"));
+			if (ownedPlayers.get(pitcher.getPlayerId()) == null) continue;
+			pitcher.setPlayer(e.getElementsByAttributeValue("data-stat", "player").select("a").first().text());
+			pitcher.setTeam(e.getElementsByAttributeValue("data-stat", "team_ID").select("a").first().text());
+			pitcher.setWin(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "W").first().text()));
+			pitcher.setSave(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "SV").first().text()));
+			pitcher.setHold(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "HOLD").first().text()));
+			pitcher.setIp(Float.parseFloat(e.getElementsByAttributeValue("data-stat", "IP").first().text()));
+			String newIpVal = "";
+    		if (! e.getElementsByAttributeValue("data-stat", "IP").first().text().endsWith("0")) {
+    			char[] charArray = e.getElementsByAttributeValue("data-stat", "IP").first().text().toCharArray();
+    			if (e.getElementsByAttributeValue("data-stat", "IP").first().text().endsWith("1"))
+    				charArray[charArray.length-1] = '3';
+    			else
+    				charArray[charArray.length-1] = '7';
+    			newIpVal = String.valueOf(charArray);
+     		}
+    		else
+    			newIpVal=e.getElementsByAttributeValue("data-stat", "IP").first().text();
+			pitcher.setIp(Float.parseFloat(newIpVal));
+			pitcher.setHits(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "H").first().text()));
+			pitcher.setEr(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "ER").first().text()));
+			pitcher.setK(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "SO").first().text()));
+			pitcher.setBb(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "BB").first().text()));
+			pitcher.setHbp(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "HBP").first().text()));
+			pitcher.setBk(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "BK").first().text()));
+			pitcher.setWp(Integer.parseInt(e.getElementsByAttributeValue("data-stat", "WP").first().text()));			
 			if (ownedPlayers.get(pitcher.getPlayerId()) != null) retHitMap.put(pitcher.getPlayerId(), pitcher);
 		}
 		
