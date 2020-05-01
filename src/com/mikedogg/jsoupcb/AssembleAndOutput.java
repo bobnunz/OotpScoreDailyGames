@@ -3,6 +3,7 @@ package com.mikedogg.jsoupcb;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -81,9 +82,9 @@ public class AssembleAndOutput {
 	
 	private static TreeMap<String, OwnedPlayers> getOwnedPlayers () throws IOException {
 
-		String ownedPlayerFile="D://baseball//2020//OOTP//RefFiles//BxscRosterMappedToOOTP.csv";
+		String ownedPlayerFile="D://baseball//2020//OOTP//RefFiles//master_players_file.csv";
 
-	    Reader reader = Files.newBufferedReader(Paths.get(ownedPlayerFile));
+	    Reader reader = Files.newBufferedReader(Paths.get(ownedPlayerFile), Charset.forName("windows-1252"));
 	    CSVReader csvReader = new CSVReader(reader);
 	    List<String[]> list = new ArrayList<>();
 	    list = csvReader.readAll();
@@ -97,9 +98,11 @@ public class AssembleAndOutput {
 	    		idx = 2;
 	    		continue;
 	    	}
-	    	// input = owner, team, bxscname,ootpname, ootpplayerid
+	    	//input = owner, playerid, playername, playerteam
 	    	// TreeMap key=ootpPlayerId value=OwnedPlayers instance
-	    	ownedPlayers.put(i[4], new OwnedPlayers(i[4],i[0],i[1],i[2],i[3]));
+	    	if (i[0].length() == 4 && i[0].charAt(0) >='A' && i[0].charAt(0)<='Z') {
+	    		ownedPlayers.put(i[1], new OwnedPlayers(i[1],i[0],i[3],i[2]));
+	    	}
 	    }
 	    
 	    return ownedPlayers;
@@ -195,8 +198,8 @@ public class AssembleAndOutput {
 	    TreeMap<String, String> keyOwnerValTeam = new TreeMap<String, String>();
 	    for (String[] i:list) {
 	    	if (i[2] != null && !i[2].isEmpty() && !i[2].contentEquals(" "))
-	    		keyTeamValOwner.put(i[0], i[2]);
-    			keyOwnerValTeam.put(i[2], i[0]+":0");
+	    		keyTeamValOwner.put(i[0], i[2].toUpperCase());
+    			keyOwnerValTeam.put(i[2].toUpperCase(), i[0]+":0");
 	    }
 
 	    // every matchup is enclosed in a <table> that has a class called winner - select to get winning team
@@ -226,7 +229,7 @@ public class AssembleAndOutput {
         OwnerOutput ownerTotals = new OwnerOutput();
         
         // daily output file -> dailyScores_M_D_2020.csv
-        FileWriter myWriter = new FileWriter("d:\\baseball\\2020\\OOTP\\TestDailyFiles\\dailyScores_"+month+"_"+day+"_2020.csv");
+        FileWriter myWriter = new FileWriter("d:\\baseball\\2020\\OOTP\\DailyFiles\\dailyScores_"+month+"_"+day+"_2020.csv");
         
         // trickery to round float to 1 decimal place
         DecimalFormat df = new DecimalFormat("##.#");

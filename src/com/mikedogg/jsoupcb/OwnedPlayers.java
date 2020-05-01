@@ -7,16 +7,14 @@ public class OwnedPlayers {
 	private String ootpPlayerId;
 	private String owner;
 	private String team;
-	private String bxscName;
 	private String ootpName;
 	
 
-	public OwnedPlayers(String ootpPlayerId, String owner, String team, String bxscName, String ootpName) {
+	public OwnedPlayers(String ootpPlayerId, String owner, String team, String ootpName) {
 		super();
 		this.ootpPlayerId = ootpPlayerId;
 		this.owner = owner;
 		this.team = team;
-		this.bxscName = bxscName;
 		this.ootpName = ootpName;
 	}
 	
@@ -25,7 +23,6 @@ public class OwnedPlayers {
 		this.ootpPlayerId = "";
 		this.owner = "";
 		this.team = "";
-		this.bxscName = "";
 		this.ootpName = "";
 	}
 
@@ -58,17 +55,6 @@ public class OwnedPlayers {
 	public void setTeam(String team) {
 		this.team = team;
 	}
-
-
-	public String getBxscName() {
-		return bxscName;
-	}
-
-
-	public void setBxscName(String bxscName) {
-		this.bxscName = bxscName;
-	}
-
 
 	public String getOotpName() {
 		return ootpName;
