@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import org.jsoup.Jsoup;
@@ -20,15 +21,16 @@ import com.opencsv.CSVReader;
 
 public class AssembleAndOutput {
 	
-	static void buildDailyScoringFile (String month, String day) throws IOException {
+	static void buildDailyScoringFile (Properties prop, String month, String day) throws IOException {
 		
-		Document document = Jsoup.connect("https://www.baseball-reference.com/sim/daily-stats.fcgi?type=b&year=2020&month="+month+"&day="+day).get();
+		String dailyURL = prop.getProperty("dailyBattingURL").replaceAll("MM", month).replaceAll("DD", day);
+		Document document = Jsoup.connect(dailyURL).get();
 		
 		// instantiate treemap that will be used to output daily stats 	
 		TreeMap<OwnedPlayers,OwnerOutput> dailyScoreOutput = new TreeMap<OwnedPlayers, OwnerOutput>(new OwnerComp());
 
 		// get owned players
-		TreeMap<String, OwnedPlayers> ownedPlayers = getOwnedPlayers ();
+		TreeMap<String, OwnedPlayers> ownedPlayers = getOwnedPlayers (prop);
 		
 		// get hitter stats
 		TreeMap<String,Hitter> hitters = ParseDailyHitters.getDailyHitStats(document, ownedPlayers);
@@ -41,8 +43,8 @@ public class AssembleAndOutput {
 		}
 		
 		// get pitcher stats
-		
-		document = Jsoup.connect("https://www.baseball-reference.com/sim/daily-stats.fcgi?type=p&year=2020&month="+month+"&day="+day).get();
+		dailyURL = prop.getProperty("dailyPitchingURL").replaceAll("MM", month).replaceAll("DD", day);
+		document = Jsoup.connect(dailyURL).get();
 		TreeMap<String, Pitcher> pitchers = ParseDailyPitchers.getDailyPitStats(document, ownedPlayers);
 		for (String oPH:pitchers.keySet()) {
 			OwnedPlayers key = ownedPlayers.get(pitchers.get(oPH).getPlayerId());
@@ -55,7 +57,8 @@ public class AssembleAndOutput {
 		
 		// parse through all boxscore games to get errors (6th)
 		
-		document = Jsoup.connect("https://www.baseball-reference.com/sim/daily.fcgi?month="+month+"&day="+day+"&year=2020").get();
+		dailyURL = prop.getProperty("dailyBoxScoresURL").replaceAll("MM", month).replaceAll("DD", day);
+		document = Jsoup.connect(dailyURL).get();
 		
 		// URL to each box score has the text "Final" in the <a> tag 
 		Elements elements = document.select("a:contains(final)");
@@ -74,16 +77,15 @@ public class AssembleAndOutput {
 		
 		// get results for owned managers (10th)
 
-		TreeMap <String, String> mgrResults=getMgrResults(document);
+		TreeMap <String, String> mgrResults=getMgrResults(prop, document);
 		
 		// write out daily file
-		createDailyFile (dailyScoreOutput,mgrResults, month, day);
+		createDailyFile (prop, dailyScoreOutput,mgrResults, month, day);
 	}
 	
-	private static TreeMap<String, OwnedPlayers> getOwnedPlayers () throws IOException {
+	private static TreeMap<String, OwnedPlayers> getOwnedPlayers (Properties prop) throws IOException {
 
-		String ownedPlayerFile="D://baseball//2020//OOTP//RefFiles//master_players_file.csv";
-
+		String ownedPlayerFile = prop.getProperty("masterPlayerFile");
 	    Reader reader = Files.newBufferedReader(Paths.get(ownedPlayerFile), Charset.forName("windows-1252"));
 	    CSVReader csvReader = new CSVReader(reader);
 	    List<String[]> list = new ArrayList<>();
@@ -177,9 +179,9 @@ public class AssembleAndOutput {
 
 	}
 	
-	public static TreeMap<String,String> getMgrResults (Document document) throws IOException {
+	public static TreeMap<String,String> getMgrResults (Properties prop, Document document) throws IOException {
 		
-		String ownedMgrFile="D://baseball//2020//OOTP//RefFiles//Owned_mgrs.csv";
+		String ownedMgrFile=prop.getProperty("ownedMgrs");
 		
 		// read in file containing owners with thier team mgr
 		
@@ -222,14 +224,14 @@ public class AssembleAndOutput {
 	    return keyOwnerValTeam;
 	}
 	
-	private static void createDailyFile (TreeMap<OwnedPlayers,OwnerOutput> dailyScoreOutput, TreeMap <String, String> mgrResults,
+	private static void createDailyFile (Properties prop, TreeMap<OwnedPlayers,OwnerOutput> dailyScoreOutput, TreeMap <String, String> mgrResults,
 			String month, String day) throws IOException {
 
         String prevOwner = " ";
         OwnerOutput ownerTotals = new OwnerOutput();
         
         // daily output file -> dailyScores_M_D_2020.csv
-        FileWriter myWriter = new FileWriter("d:\\baseball\\2020\\OOTP\\DailyFiles\\dailyScores_"+month+"_"+day+"_2020.csv");
+        FileWriter myWriter = new FileWriter(prop.getProperty("dailyScoresFile").replaceAll("MM", month).replaceAll("DD", day));  
         
         // trickery to round float to 1 decimal place
         DecimalFormat df = new DecimalFormat("##.#");
