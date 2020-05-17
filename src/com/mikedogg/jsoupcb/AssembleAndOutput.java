@@ -236,7 +236,6 @@ public class AssembleAndOutput {
         		if (!prevOwner.equalsIgnoreCase(" ")) {
         			
         			// the format of prevOwner is owner:playerId
-System.out.println(player.getOwner()+" "+prevOwner);
         			String[] tokens = mgrResults.get(prevOwner).split(":");
           			
           			// write out totals line for prevOwner
