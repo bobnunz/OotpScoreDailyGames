@@ -77,7 +77,7 @@ public class AssembleAndOutput {
 		
 		// get results for owned managers (10th)
 
-		TreeMap <String, String> mgrResults=getMgrResults(prop, document);
+		TreeMap <String, String> mgrResults=getMgrResults(ownedPlayers, document);
 		
 		// write out daily file
 		createDailyFile (prop, dailyScoreOutput,mgrResults, month, day);
@@ -179,29 +179,18 @@ public class AssembleAndOutput {
 
 	}
 	
-	public static TreeMap<String,String> getMgrResults (Properties prop, Document document) throws IOException {
-		
-		String ownedMgrFile=prop.getProperty("ownedMgrs");
-		
-		// read in file containing owners with thier team mgr
-		
-	    Reader reader = Files.newBufferedReader(Paths.get(ownedMgrFile));
-	    CSVReader csvReader = new CSVReader(reader);
-	    List<String[]> list = new ArrayList<>();
-	    list = csvReader.readAll();
-	    reader.close();
-	    csvReader.close();
-	    
+	public static TreeMap<String,String> getMgrResults (TreeMap<String, OwnedPlayers> ownedPlayers, Document document) throws IOException {
+			    
 	    //insert mgrs into TreeMap for later lookup
-    	// input = teamFullName, teamAbbrev, owner
     	// TreeMap key=owner value=teamFullName:WL 
 	    // WL=> 0=loss, 1=win
 	    TreeMap<String, String> keyTeamValOwner = new TreeMap<String, String>();
 	    TreeMap<String, String> keyOwnerValTeam = new TreeMap<String, String>();
-	    for (String[] i:list) {
-	    	if (i[2] != null && !i[2].isEmpty() && !i[2].contentEquals(" "))
-	    		keyTeamValOwner.put(i[0], i[2].toUpperCase());
-    			keyOwnerValTeam.put(i[2].toUpperCase(), i[0]+":0");
+	    for (String i: ownedPlayers.keySet()) {
+	    	if (ownedPlayers.get(i).getOotpName().contains(Character.toString(':')))  {
+	    		keyTeamValOwner.put(ownedPlayers.get(i).getOotpPlayerId(), ownedPlayers.get(i).getOwner());
+    			keyOwnerValTeam.put(ownedPlayers.get(i).getOwner(), ownedPlayers.get(i).getOotpPlayerId()+":0");
+	    	}
 	    }
 
 	    // every matchup is enclosed in a <table> that has a class called winner - select to get winning team
@@ -247,7 +236,8 @@ public class AssembleAndOutput {
         		if (!prevOwner.equalsIgnoreCase(" ")) {
         			
         			// the format of prevOwner is owner:playerId
-          			String[] tokens = mgrResults.get(prevOwner).split(":");
+System.out.println(player.getOwner()+" "+prevOwner);
+        			String[] tokens = mgrResults.get(prevOwner).split(":");
           			
           			// write out totals line for prevOwner
         			myWriter.write("Totals ("+tokens[0]+"),,,"
